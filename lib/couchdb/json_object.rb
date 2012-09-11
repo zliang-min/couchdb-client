@@ -15,14 +15,19 @@ module CouchDB
         :object => JSONObject
       }
 
-      attr_reader :name, :type, :default
+      attr_reader :name, :default
 
       def initialize(name, type, options = {}, &blk)
-        @name, @type = name, type
-        @type = BuiltinTypes[type] if type.is_a?(Symbol)
-        raise ArgumentError, "Unknow property type #{type.inspect}." if @type.nil?
+        @name = name
 
-        @type = Class.new JSONObject, &blk if @type == JSONObject
+        if type.is_a?(Symbol)
+          raise ArgumentError, "Unknow property type #{type.inspect}." unless BuiltinTypes.has_key?(type)
+          type = BuiltinTypes[type] 
+        end
+        type = Class.new JSONObject, &blk if type == JSONObject
+        convert_method = [:convert, :call, :new].detect { |m| type.respond_to? m }
+        raise ArgumentError, "Property type should has :convert, :call or :new method." unless convert_method
+        @convertor = type.method convert_method
 
         @required  = options[:required]
         @default   = options[:default]
@@ -38,7 +43,7 @@ module CouchDB
       end
 
       def convert(value)
-        type.send(type.respond_to?(:convert) ? :convert : :call, value)
+        @convertor.call value
       rescue
         raise InvalidValue.new(name, value)
       end
@@ -47,10 +52,6 @@ module CouchDB
         @validator.nil? or value.nil? or @validator.call(value)
       end
     end # Property
-
-    def self.convert(value)
-      new value
-    end
 
     # Public: Make this object become a fixed struture object, which means
     #         all properties of this object have to be declared (using the
