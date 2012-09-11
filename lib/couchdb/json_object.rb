@@ -51,7 +51,7 @@ module CouchDB
       def convert(value)
         @convertor.call value
       rescue
-        raise $!.is_a?(InvalidValue) ? $! : InvalidValue.new(name, value)
+        raise $!.is_a?(InvalidValue) ? $! : InvalidValue.new(name, value, $!.message)
       end
 
       def valid_value?(value)

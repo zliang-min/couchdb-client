@@ -24,11 +24,11 @@ module CouchDB
   end
 
   class InvalidValue < InvalidObject
-    attr_accessor :property, :value
+    attr_accessor :property, :value, :reason
 
-    def initialize(property, value)
-      @property, @value = property, value
-      super "#{value.inspect} is not a valid value for #{property}"
+    def initialize(property, value, reason = nil)
+      @property, @value, @reason = property, value, reason
+      super "#{value.inspect} is not a valid value for #{property} (#{reason})."
     end
   end
 
