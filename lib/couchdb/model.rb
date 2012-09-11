@@ -15,7 +15,7 @@ module CouchDB
     end
 
     def self.db
-      @db ||= connection[db_name, doc_class]
+      @db ||= connection && connection[db_name, doc_class]
     end
 
     def self.set_db_name(name)
@@ -28,8 +28,9 @@ module CouchDB
 
     def self.set_doc_class(doc_class)
       raise ArgumentError, "Not a Document." unless doc_class <= Document
+      return if @doc_class == doc_class
       @doc_class = doc_class
-      db.set_doc_class doc_class
+      @db = nil
     end
 
     def self.doc_class
@@ -55,12 +56,10 @@ module CouchDB
     end
 
     def read(chained_keys, splitter = '.')
-      keys = chained_keys.split splitter
-      value = self[keys.shift]
-      keys.inject(value) { |result, key|
-        result = result.respond_to?(key) ? result.send(key) : result[key]
-        break unless result
-        result
+      chained_keys.split(splitter).inject(@doc) { |value, key|
+        value = value.respond_to?(key) ? value.send(key) : value[key]
+        break if value.nil?
+        value
       }
     end
 

@@ -25,9 +25,15 @@ module CouchDB
           type = BuiltinTypes[type] 
         end
         type = Class.new JSONObject, &blk if type == JSONObject
-        convert_method = [:convert, :call, :new].detect { |m| type.respond_to? m }
-        raise ArgumentError, "Property type should has :convert, :call or :new method." unless convert_method
-        @convertor = type.method convert_method
+
+        @convertor =
+          if type.respond_to?(:call)
+            type
+          elsif convert_method = [:convert, :new].detect { |m| type.respond_to? m }
+            type.method convert_method
+          else
+            raise ArgumentError, "Property type should has :convert, :call or :new method."
+          end
 
         @required  = options[:required]
         @default   = options[:default]
@@ -43,7 +49,10 @@ module CouchDB
       end
 
       def convert(value)
-        @convertor.call value
+        puts "convert #{value.inspect}"
+        v = @convertor.call value
+        puts v.inspect
+        v
       rescue
         raise InvalidValue.new(name, value)
       end
@@ -79,30 +88,15 @@ module CouchDB
       @properties ||= {}.tap { |h| h.merge! superclass.properties if superclass < JSONObject }
     end
 
-    def self.property(name, type = :string, options = {})
+    def self.property(name, type = :string, options = {}, &blk)
       name = name.to_s
-      properties[name] = Property.new(name, type, options)
-      define_accessors name
+      properties[name] = Property.new(name, type, options, &blk)
     end
 
     # Public: lookup a property definition by its name.
     def self.lookup(property_name)
       properties[property_name.to_s]
     end
-
-    def self.define_accessors(name)
-      class_eval <<-_CODE_
-      def #{name}
-        self['#{name}']
-      end
-
-      def #{name}=(value)
-        self['#{name}'] = value
-      end
-      _CODE_
-    end
-
-    private_class_method :define_accessors
 
     attr_reader :errors
 
