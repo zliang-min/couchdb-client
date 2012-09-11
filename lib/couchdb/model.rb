@@ -88,12 +88,24 @@ module CouchDB
       @doc.save
     end
 
+    def delete
+      @doc.delete!
+      freeze
+    end
+
     def to_hash
       @doc.to_hash
     end
 
     def to_json
       JSON.fast_generate @doc
+    end
+
+    private
+
+    def freeze
+      super
+      @doc.frezze
     end
   end
 end
