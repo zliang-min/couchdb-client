@@ -74,8 +74,9 @@ module CouchDB
       not fixed_structure?
     end
 
+    # Public: Properties will inherit from the parent class.
     def self.properties
-      @properties ||= {}
+      @properties ||= {}.tap { |h| h.merge! superclass.properties if superclass < JSONObject }
     end
 
     def self.property(name, type = :string, options = {})

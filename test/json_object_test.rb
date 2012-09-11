@@ -57,4 +57,23 @@ class JSONObjectTest < MiniTest::Unit::TestCase
     refute o.valid?
     assert_instance_of CouchDB::InvalidValue, o.errors['key']
   end
+
+  def test_property_inherent
+    parent = Class.new CouchDB::JSONObject do
+      fixed_structure!
+
+      property :name, :string, :required => true
+    end
+
+    child = Class.new parent do
+      property :parent, :string, :required => true
+    end
+
+    p = parent.new :name => 'Gimi'
+    assert p.valid?
+
+    c = child.new :parent => 'Gimi'
+    refute c.valid?
+    assert_instance_of CouchDB::MissingProperty, c.errors['name']
+  end
 end
