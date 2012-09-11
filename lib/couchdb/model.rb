@@ -54,6 +54,16 @@ module CouchDB
       @doc[attribute] = value
     end
 
+    def read(chained_keys, splitter = '.')
+      keys = chained_keys.split splitter
+      value = self[keys.shift]
+      keys.inject(value) { |result, key|
+        result = result.respond_to?(key) ? result.send(key) : result[key]
+        break unless result
+        result
+      }
+    end
+
     def _id
       @doc._id
     end
