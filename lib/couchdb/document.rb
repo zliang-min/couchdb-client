@@ -7,6 +7,9 @@ module CouchDB
       alias dynamic_schema? dynamic_structure?
     end
 
+    property :_id,  :string
+    property :_rev, :string
+
     attr_reader :db
 
     def initialize(db, attributes = nil)
