@@ -49,10 +49,7 @@ module CouchDB
       end
 
       def convert(value)
-        puts "convert #{value.inspect}"
-        v = @convertor.call value
-        puts v.inspect
-        v
+        @convertor.call value
       rescue
         raise InvalidValue.new(name, value)
       end
