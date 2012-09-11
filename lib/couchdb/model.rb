@@ -38,7 +38,8 @@ module CouchDB
     end
 
     def self.find(id)
-      new db.find(id)
+      doc = db.find(id)
+      new doc if doc
     end
 
     attr_reader :doc
