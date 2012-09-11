@@ -105,7 +105,7 @@ module CouchDB
 
     def freeze
       super
-      @doc.frezze
+      @doc.freeze
     end
   end
 end
