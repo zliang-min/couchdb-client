@@ -86,5 +86,13 @@ module CouchDB
     def save
       @doc.save
     end
+
+    def to_hash
+      @doc.to_hash
+    end
+
+    def to_json
+      JSON.fast_generate @doc
+    end
   end
 end
