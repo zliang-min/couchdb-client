@@ -168,7 +168,7 @@ module CouchDB
     def convert_value(property_name, value)
       unless value.nil?
         property = self.class.lookup property_name
-        raise UnknownProperty.new(property_name) if fixed_structure? && property.nil?
+        raise UndefinedProperty.new(property_name) if fixed_structure? && property.nil?
         value = property.convert(value) if property
       end
 

@@ -28,7 +28,7 @@ class JSONObjectTest < MiniTest::Unit::TestCase
     end.new
 
     assert o['valid_key'] = 'some_value'
-    assert_raises CouchDB::UnknownProperty do
+    assert_raises CouchDB::UndefinedProperty do
       o['invalid_key'] = 'some_value'
     end
   end

@@ -3,32 +3,60 @@ module CouchDB
 
   class InvalidOperation < Error; end
 
-  class InvalidObject < Error; end
+  class PropertyError < Error
+    attr_reader :name
 
-  class UnknownProperty < InvalidObject
-    attr_accessor :name
-
-    def initialize(name)
+    def initialize(name, msg = nil)
       @name = name
-      super "Property #{name.inspect} is not declared."
+      msg ||= "Property error: #{name}"
+      super msg
     end
   end
 
-  class MissingProperty < InvalidObject
-    attr_accessor :name
-
+  class UndefinedProperty < PropertyError
     def initialize(name)
-      @name = name
-      super "Property #{name.inspect} is required, but not given."
+      super name, "Property #{name.inspect} is not defined."
     end
   end
 
-  class InvalidValue < InvalidObject
-    attr_accessor :property, :value, :reason
+  class MissingProperty < PropertyError
+    def initialize(name)
+      super name, "Property #{name.inspect} is required, but not given."
+    end
+  end
 
-    def initialize(property, value, reason = nil)
-      @property, @value, @reason = property, value, reason
-      super "#{value.inspect} is not a valid value for #{property} (#{reason})."
+  class InvalidValue < PropertyError
+    attr_accessor :value, :reason
+
+    def initialize(name, value, reason = nil)
+      @value, @reason = value, reason
+      super name, "#{value.inspect} is not a valid value for #{name} (#{reason})."
+    end
+  end
+
+  class InvalidObject < Error
+    attr_reader :errors
+
+    def initialize(json_object)
+      @errors = json_object.errors.inject({}) { |h, (name, error)|
+        h[name] = case error
+                  when UndefinedProperty
+                    {:error => 'undefined'}
+                  when MissingProperty
+                    {:error => 'missing'}
+                  when InvalidValue
+                    {:error => 'invalid', :value => error.value}
+                  else
+                    {:error => 'unknown'}
+                  end
+        h
+      }
+
+      super "#{json_object} is invalid."
+    end
+
+    def to_json
+      JSON.fast_generate @errors
     end
   end
 
