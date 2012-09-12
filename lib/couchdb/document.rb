@@ -15,6 +15,7 @@ module CouchDB
     def initialize(db, attributes = nil)
       super attributes
       @db = db
+      send :after_initialize if respond_to?(:after_initialize)
     end
 
     def _rev
@@ -34,16 +35,19 @@ module CouchDB
     end
 
     def save
+      send :before_save if respond_to?(:before_save)
       replace db.put(self)
     end
 
     def update!(attributes)
+      send :before_update if respond_to?(:before_update)
       update attributes
       save
     end
 
     def delete!
       raise InvalidOperation, "Can not delete a document without _id or _rev." unless id and rev
+      send :before_delete if respond_to?(:before_delete)
       db.delete id, rev
     end
   end
