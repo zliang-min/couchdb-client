@@ -9,8 +9,6 @@ class ModelTest < CouchDB::TestCase
   def test_read_method
     model = Class.new(CouchDB::Model) do
       set_doc_class Class.new(CouchDB::Document) {
-        puts 'world'
-
         property :key_one, :object do
           property :inner_key, :string
         end

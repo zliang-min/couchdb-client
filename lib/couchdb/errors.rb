@@ -11,17 +11,29 @@ module CouchDB
       msg ||= "Property error: #{name}"
       super msg
     end
+
+    def to_hash
+      {:property => name, :error => 'error'}
+    end
   end
 
   class UndefinedProperty < PropertyError
     def initialize(name)
       super name, "Property #{name.inspect} is not defined."
     end
+
+    def to_hash
+      {:property => name, :error => 'undefined'}
+    end
   end
 
   class MissingProperty < PropertyError
     def initialize(name)
       super name, "Property #{name.inspect} is required, but not given."
+    end
+
+    def to_hash
+      {:property => name, :error => 'missing'}
     end
   end
 
@@ -32,6 +44,10 @@ module CouchDB
       @value, @reason = value, reason
       super name, "#{value.inspect} is not a valid value for #{name} (#{reason})."
     end
+
+    def to_hash
+      {:property => name, :value => value, :error => 'invalid'}
+    end
   end
 
   class InvalidObject < Error
@@ -40,12 +56,8 @@ module CouchDB
     def initialize(json_object)
       @errors = json_object.errors.inject({}) { |h, (name, error)|
         h[name] = case error
-                  when UndefinedProperty
-                    {:error => 'undefined'}
-                  when MissingProperty
-                    {:error => 'missing'}
-                  when InvalidValue
-                    {:error => 'invalid', :value => error.value}
+                  when PropertyError
+                    error.to_hash.tap { |hash| hash.delete :property }
                   else
                     {:error => 'unknown'}
                   end
@@ -53,6 +65,10 @@ module CouchDB
       }
 
       super "#{json_object} is invalid."
+    end
+
+    def to_hash
+      @errors
     end
 
     def to_json
