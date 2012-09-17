@@ -58,6 +58,8 @@ module CouchDB
         h[name] = case error
                   when PropertyError
                     error.to_hash.tap { |hash| hash.delete :property }
+                  when InvalidObject
+                    error.to_hash
                   else
                     {:error => 'unknown'}
                   end
