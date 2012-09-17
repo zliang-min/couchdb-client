@@ -60,7 +60,7 @@ module CouchDB
     #
     # This method can be used to create and update a document.
     def put(data)
-      data = new_doc data
+      data = new_doc data unless data.is_a?(doc_class)
       raise InvalidObject.new(data) unless data.valid?
 
       resp =

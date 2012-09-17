@@ -93,6 +93,10 @@ module CouchDB
       freeze
     end
 
+    def errors
+      @doc.errors
+    end
+
     def to_hash
       @doc.to_hash
     end

@@ -136,13 +136,19 @@ module CouchDB
       errors.clear
 
       properties.each { |k, property|
-        if property.required? and self[k].nil?
+        v = self[k]
+
+        if property.required? and v.nil?
           errors[k] = MissingProperty.new(k)
           next
         end
 
-        if not property.valid_value?(self[k])
-          errors[k] = InvalidValue.new(k, self[k])
+        if not property.valid_value?(v)
+          errors[k] = InvalidValue.new(k, v)
+        end
+
+        if v.is_a?(JSONObject) and not v.valid?
+          errors[k] = InvalidObject.new(v)
         end
       }
     end

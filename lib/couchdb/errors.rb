@@ -64,7 +64,7 @@ module CouchDB
         h
       }
 
-      super "#{json_object} is invalid."
+      super "#{json_object.inspect} is invalid."
     end
 
     def to_hash
