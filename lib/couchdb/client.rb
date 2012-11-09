@@ -20,8 +20,8 @@ module CouchDB
     
     alias [] db
 
-    def get(path)
-      send_http_request :get, path
+    def get(path, options = {})
+      send_http_request :get, path, options
     end
 
     def put(path, options = {})

@@ -31,8 +31,8 @@ module CouchDB
       client.delete name
     end
 
-    def all_docs(options = nil)
-      client.get path_for('_all_docs')
+    def all_docs(params = nil)
+      client.get path_for('_all_docs'), :query => params
     end
 
     def new_doc(data)
